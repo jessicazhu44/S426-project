@@ -1,0 +1,52 @@
+---
+title: "S426 project"
+author: "Jingyu Xie"
+date: "2019/11/10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(GGally)
+heart <- read.csv("heart.csv")
+names(heart)[1] <- "age"
+summary(heart)
+```
+
+```{r}
+ggpairs(heart, columns = c("age","sex","trestbps","target"))
+```
+
+```{r}
+ggplot(heart, aes(age)) + geom_histogram()
+ggplot(heart, aes(sex)) + geom_histogram()
+ggplot(heart, aes(trestbps)) + geom_histogram()
+```
+
+
+```{r}
+# No interaction
+m1 <- glm(target ~ age + sex + trestbps, family = binomial, data = heart)
+
+#With interaction
+m2 <- glm(target ~ age + sex + trestbps + age:sex + age:trestbps + sex:trestbps, family = binomial, data = heart)
+m3 <- glm(target ~ age * sex * trestbps, family = binomial, data = heart)
+
+```
+
+```{r}
+m1.df = data.frame(heart, m1.fitted = fitted.values(m1), m1.resid = residuals(m1, type = 'response'))
+m2.df = data.frame(heart, m2.fitted = fitted.values(m2), m2.resid = residuals(m2, type = 'response'))
+m3.df = data.frame(heart, m3.fitted = fitted.values(m3), m3.resid = residuals(m3, type = 'response'))
+```
+
+```{r}
+ggplot(m1.df, aes(m1.fitted, m1.resid)) + geom_point() + geom_smooth(method = 'loess', method.args = list(degree = 1))
+ggplot(m1.df, aes(age, m1.resid)) + geom_point() + geom_smooth(method = 'loess', method.args = list(degree = 1))
+ggplot(m1.df, aes(trestbps, m1.resid)) + geom_point() + geom_smooth(method = 'loess', method.args = list(degree = 1)) 
+```
+
+
